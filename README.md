@@ -12,18 +12,19 @@ own Client ID and Client Secret**, stored locally in the browser.
 ## Supported sites
 
 Detection is handled by a modular per-site **adapter** system, so new sites are easy
-to add. "Verified" means the URL/DOM pattern was confirmed against a real page;
-"best-effort" means the adapter follows the site's conventions but could not be
-confirmed at build time (these are marked **UNVERIFIED** in code and may need a tweak).
+to add. "Verified" means the URL/DOM pattern was confirmed against a real page and the
+adapter exercised against the live site — all six currently are. A new adapter that
+only follows a site's conventions without being confirmed is marked **UNVERIFIED** in
+code and carries `verified: false`, which the popup surfaces to the user.
 
 | Site | Hosts | Episode URL pattern | Status |
 | --- | --- | --- | --- |
 | TRanimeizle | tranimeizle.io/.co/.net | `/{slug}-{N}-bolum-izle` | Verified |
 | Anizm | anizm.net, anizm.tr | `/{slug}-{N}-bolum-izle` | Verified |
 | TürkAnime | turkanime.co/.tv/.com.tr/.pro | `/video/{slug}-{N}-bolum` | Verified |
-| Animeler | animeler.me, animeler.pw | `/izle/{slug}-{N}-bolum/` | Verified |
-| AnimeCix | animecix.tv, animecix.net | `/titles/{id}/{slug}/season/{S}/episode/{E}` (SPA) | **Best-effort / UNVERIFIED** |
-| OpenAnime | openani.me, openanime.com.tr | `/anime/{id}/{slug}/…` (SPA) | **Best-effort / UNVERIFIED** |
+| TRAnimeci | tranimaci.com | `/video/{id}-{slug}-{N}-bolum` | Verified |
+| OpenAnime | openani.me, openanime.com.tr | `/anime/{slug}/{S}/{E}` (SPA) | Verified |
+| AnimeCix | animecix.tv, animecix.net | `/titles/{id}/{slug}/season/{S}/episode/{E}` (SPA) | Verified |
 
 The MAL side (OAuth, title→id resolution, caching, auto-update, settings) is shared
 across every site.
@@ -148,9 +149,9 @@ src/
     tranimeizle.js    # verified
     anizm.js          # verified
     turkanime.js      # verified
-    animeler.js       # verified
-    animecix.js       # UNVERIFIED (best-effort, SPA)
-    openanime.js      # UNVERIFIED (best-effort, SPA)
+    tranimaci.js      # verified
+    openanime.js      # verified (SPA)
+    animecix.js       # verified (SPA)
   popup.html          # UI markup
   popup.css           # UI styles
   popup.js            # UI logic (settings folded in here)
@@ -199,12 +200,11 @@ CHANGELOG.md          # Keep a Changelog format
 - **Auto-update heuristic.** "Watched" fires on ~60% video progress, or a 90s
   fallback when the player is inside a cross-origin iframe we can't read. It may be
   too eager/lazy for some players. TODO: make the threshold configurable.
-- **UNVERIFIED adapters.** The **AnimeCix** and **OpenAnime** adapters are
-  best-effort: those sites are Cloudflare-protected SPAs whose exact watch-route DOM
-  could not be confirmed at build time, so detection relies on the document title +
-  URL heuristics and may need adjusting. They are clearly marked `UNVERIFIED` in code
-  and in the supported-sites table. The four verified adapters (TRanimeizle, Anizm,
-  TürkAnime, Animeler) match confirmed URL patterns.
+- **SPA fragility.** AnimeCix and OpenAnime are single-page apps: they swap episodes
+  without a full page load, so detection depends on `content.js` re-running when the
+  URL changes (polled every 1.5s) rather than on a fresh document. All six adapters are
+  verified against real pages, but the SPA pair is the likeliest to break first if a
+  site reworks its routing.
 - **Season handling.** Resolution is season-aware: a `season ≥ 2` detection searches
   season-qualified title variants and picks the matching per-season MAL entry (each
   MAL season is a separate entry). Sites that bake the season into the title as a
@@ -245,11 +245,12 @@ the popup.
 
 ### Most wanted
 
-- **Verifying the UNVERIFIED adapters.** AnimeCix and OpenAnime were written against
-  URL/title heuristics without a confirmed page. If you can watch an episode on either
-  and confirm or correct the detection, that is the most useful contribution going: fix
-  `src/adapters/<id>.js`, flip `verified: true` in `src/sites.js`, and update the
-  supported-sites table above.
+- **Reporting a site that broke.** These sites change markup and rotate domains without
+  notice, so an adapter that works today can silently stop detecting. If the popup shows
+  "Unsupported site" or the wrong episode, open an issue with the episode URL — that
+  alone is usually enough to fix it. Saving the page (Ctrl+S → "Webpage, Single File")
+  and attaching what you can is even better: reading real markup is how every adapter
+  here was confirmed.
 - **New sites** — see [Adding a new site adapter](#adding-a-new-site-adapter).
 - **Title-matching accuracy**, particularly seasons, cours, and movies.
 

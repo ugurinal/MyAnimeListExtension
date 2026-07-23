@@ -70,9 +70,15 @@ Four places must stay in sync, or detection silently no-ops:
    where `id` matches the `sites.js` id. Reuse `genericDetect` / `genericIsEpisodePage`
    for the common `…-N-bolum…` URL shape.
 
-`verified: false` marks a best-effort adapter (AnimeCix, OpenAnime — Cloudflare SPAs whose
-DOM was never confirmed); the popup surfaces this to the user. Keep the `UNVERIFIED` markers
-in those files' headers accurate.
+`verified: false` marks a best-effort adapter whose DOM was never confirmed; the popup
+surfaces this to the user. All six adapters are currently `verified: true`, so a new site
+is the only reason to set it false — and flipping it back to true means both confirming
+the markup and exercising the adapter on the live site. Keep the header comment in the
+adapter file consistent with the flag.
+
+Saved `.mhtml` page snapshots used to confirm an adapter live in `fixtures/`, which is
+gitignored — they're large and mirror third-party pages. MHTML is quoted-printable, so
+parse it (Python's `email` module) rather than grepping the raw file.
 
 ## Non-obvious constraints
 

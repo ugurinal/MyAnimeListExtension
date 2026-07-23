@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-24
+
+### Added
+
+- **TRAnimeci support** (`tranimaci.com`) — episode pages of the form
+  `/video/{id}-{slug}-{N}-bolum`. Verified against a saved episode page. Note this is a
+  different site from TRanimeizle despite the similar name.
+
+### Changed
+
+- **OpenAnime is now verified, and its adapter rewritten.** The real watch route is
+  `/anime/{slug}/{season}/{episode}` — there is no numeric id segment, contrary to what
+  the best-effort adapter assumed.
+- **AnimeCix is now verified.** Its adapter has been exercised against the live site; no
+  code change was needed. No adapter is marked UNVERIFIED any more.
+
+### Removed
+
+- **Animeler support** (`animeler.me`, `animeler.pw`) — adapter, site registry entry and
+  manifest matches dropped.
+
+### Fixed
+
+- **OpenAnime reported the season number as the episode.** The old adapter took the
+  first trailing numeric URL segment, which is the season, so
+  `/anime/{slug}/1/4` was detected as episode 1 rather than episode 4.
+- **OpenAnime never detected a season, and its slug collided across seasons.** Season is
+  now read from the URL (or the `S01B04` title marker, or the Turkish description), and
+  `seriesSlug` is season-qualified (`{slug}-s{season}`) so seasons sharing one slug can no
+  longer overwrite each other's MAL mapping.
+- **OpenAnime's episode marker leaked into the MAL search query.** Titles read as
+  `"... S01B04"`; the marker is now stripped before the title is searched.
+
 ## [1.0.0] - 2026-07-24
 
 _Initial release._
@@ -52,5 +85,6 @@ _Initial release._
   MAL's edge WAF answers such queries with an HTML `403` page. A blocked search shows a
   short message pointing at the manual search instead of raw markup.
 
-[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ugurinal/MyAnimeListExtension/releases/tag/v1.0.0
