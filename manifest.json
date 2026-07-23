@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "MyAnimeList Updater for Turkish Anime Sites",
+  "version": "1.0.0",
+  "description": "Detects the anime/episode you are watching on Turkish anime streaming sites and updates your MyAnimeList watch progress.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "identity",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://api.myanimelist.net/*",
+    "https://myanimelist.net/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.tranimeizle.io/*",
+        "*://*.tranimeizle.co/*",
+        "*://*.tranimeizle.net/*",
+        "*://*.anizm.net/*",
+        "*://*.anizm.tr/*",
+        "*://*.turkanime.co/*",
+        "*://*.turkanime.tv/*",
+        "*://*.turkanime.com.tr/*",
+        "*://*.turkanime.pro/*",
+        "*://*.animeler.me/*",
+        "*://*.animeler.pw/*",
+        "*://*.animecix.tv/*",
+        "*://*.animecix.net/*",
+        "*://*.openani.me/*",
+        "*://*.openanime.com.tr/*"
+      ],
+      "js": [
+        "src/sites.js",
+        "src/adapters/common.js",
+        "src/adapters/tranimeizle.js",
+        "src/adapters/anizm.js",
+        "src/adapters/turkanime.js",
+        "src/adapters/animeler.js",
+        "src/adapters/animecix.js",
+        "src/adapters/openanime.js",
+        "src/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "MyAnimeList Updater",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}

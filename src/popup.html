@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyAnimeList Updater</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <img src="../icons/icon48.png" alt="" class="brand-logo" />
+        <div>
+          <h1>MAL Updater</h1>
+          <p class="sub">for tranimeizle.io</p>
+        </div>
+      </div>
+      <span id="conn-badge" class="badge badge-off">Not connected</span>
+    </header>
+
+    <!-- Current site indicator -->
+    <div id="site-line" class="site-line muted">Checking site…</div>
+
+    <!-- Currently detected anime/episode -->
+    <section class="card" id="detection-card">
+      <h2>Detected</h2>
+      <div id="detection-body">
+        <p class="muted" id="detection-empty">
+          Open an episode page on a supported site to detect an anime.
+        </p>
+        <div id="detection-info" class="hidden">
+          <div class="anime-title" id="d-title">—</div>
+          <div class="episode-line">
+            Episode <strong id="d-episode">—</strong>
+          </div>
+          <div class="slug muted" id="d-slug"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Resolved MAL target: the anime that WILL be edited -->
+    <section class="card hidden" id="target-card">
+      <h2>Will update on MAL</h2>
+      <div class="target-row">
+        <a id="target-cover-link" href="#" target="_blank" rel="noreferrer" class="target-cover-wrap">
+          <img id="target-cover" class="target-cover hidden" alt="" />
+        </a>
+        <div class="target-meta">
+          <a id="target-title-link" href="#" target="_blank" rel="noreferrer" class="target-title"
+            >—</a
+          >
+          <div class="target-episode">Episode <strong id="target-episode-num">—</strong></div>
+          <div id="target-note" class="target-note hidden"></div>
+        </div>
+      </div>
+      <button id="btn-change" class="btn btn-secondary btn-change">Change / wrong anime?</button>
+    </section>
+
+    <!-- Actions -->
+    <section class="card">
+      <button id="btn-update" class="btn btn-primary" disabled>
+        Update progress on MAL
+      </button>
+      <label class="status-row">
+        <span>Set status to</span>
+        <select id="status-select">
+          <option value="watching" selected>Watching</option>
+          <option value="completed">Completed</option>
+          <option value="on_hold">On hold</option>
+          <option value="dropped">Dropped</option>
+          <option value="plan_to_watch">Plan to watch</option>
+          <option value="">(don't change)</option>
+        </select>
+      </label>
+      <label class="status-row">
+        <span>Score</span>
+        <select id="score-select">
+          <option value="" selected>(don't set)</option>
+          <option value="10">10 Masterpiece</option>
+          <option value="9">9 Great</option>
+          <option value="8">8 Very Good</option>
+          <option value="7">7 Good</option>
+          <option value="6">6 Fine</option>
+          <option value="5">5 Average</option>
+          <option value="4">4 Bad</option>
+          <option value="3">3 Very Bad</option>
+          <option value="2">2 Horrible</option>
+          <option value="1">1 Appalling</option>
+        </select>
+      </label>
+      <div id="status-msg" class="status-msg" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- Change/confirm anime: auto-opened when the match is ambiguous, or
+         toggled manually via "Change / wrong anime?" above -->
+    <section class="card hidden" id="change-card">
+      <h2 id="change-heading">Pick the correct anime</h2>
+      <p class="muted" id="change-hint">
+        We couldn't confidently match this title. Choose one, or search:
+      </p>
+      <div class="search-row">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search MyAnimeList…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="btn-search" class="btn btn-secondary btn-search">Search</button>
+      </div>
+      <ul id="pick-list" class="pick-list"></ul>
+    </section>
+
+    <!-- Settings -->
+    <section class="card">
+      <button class="disclosure" id="settings-toggle" aria-expanded="false">
+        <span>Settings</span>
+        <span class="chev">▾</span>
+      </button>
+      <div class="settings-body hidden" id="settings-body">
+        <label class="field">
+          <span>MAL Client ID</span>
+          <input
+            type="text"
+            id="client-id"
+            placeholder="Your MyAnimeList API client id"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+        <p class="hint">
+          Create one at
+          <a href="https://myanimelist.net/apiconfig" target="_blank" rel="noreferrer"
+            >myanimelist.net/apiconfig</a
+          >. See the README for step-by-step help.
+        </p>
+
+        <label class="field">
+          <span>MAL Client Secret</span>
+          <input
+            type="password"
+            id="client-secret"
+            placeholder="Your MyAnimeList API client secret"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </label>
+        <p class="hint">
+          Required — MyAnimeList rejects the sign-in without it. Copy it from your MAL app
+          page next to the Client ID.
+        </p>
+
+        <label class="field-inline">
+          <input type="checkbox" id="auto-update" />
+          <span>Auto-update while I watch</span>
+        </label>
+
+        <div class="field">
+          <span>Redirect URI to register in your MAL app</span>
+          <div class="copy-row">
+            <input type="text" id="redirect-uri" readonly />
+            <button id="copy-redirect" class="btn btn-ghost" title="Copy">Copy</button>
+          </div>
+          <p class="hint">Paste this exact value into your MAL app's "App Redirect URL".</p>
+        </div>
+
+        <div class="settings-actions">
+          <button id="btn-save" class="btn btn-secondary">Save settings</button>
+          <button id="btn-connect" class="btn btn-primary">Connect MyAnimeList</button>
+          <button id="btn-disconnect" class="btn btn-ghost hidden">Disconnect</button>
+        </div>
+      </div>
+    </section>
+
+    <script src="sites.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
