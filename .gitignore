@@ -1,2 +1,6 @@
 # Claude Code local config, agents, and session data
 .claude/
+
+# Saved page snapshots (.mhtml) used as reference when writing site adapters.
+# Local-only: they are large, and they mirror third-party pages.
+fixtures/

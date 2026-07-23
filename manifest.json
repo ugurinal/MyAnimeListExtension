@@ -32,8 +32,7 @@
         "*://*.turkanime.tv/*",
         "*://*.turkanime.com.tr/*",
         "*://*.turkanime.pro/*",
-        "*://*.animeler.me/*",
-        "*://*.animeler.pw/*",
+        "*://*.tranimaci.com/*",
         "*://*.animecix.tv/*",
         "*://*.animecix.net/*",
         "*://*.openani.me/*",
@@ -45,7 +44,7 @@
         "src/adapters/tranimeizle.js",
         "src/adapters/anizm.js",
         "src/adapters/turkanime.js",
-        "src/adapters/animeler.js",
+        "src/adapters/tranimaci.js",
         "src/adapters/animecix.js",
         "src/adapters/openanime.js",
         "src/content.js"

@@ -1,9 +1,9 @@
 /*
- * adapters/animecix.js — UNVERIFIED (best-effort).
+ * adapters/animecix.js — VERIFIED by live testing.
  *
- * AnimeCix (animecix.tv / animecix.net) is a Cloudflare-protected React SPA, so its
- * exact watch-route DOM could not be confirmed at build time. Confirmed from a saved
- * page (og:url / canonical), the real watch-route shape is:
+ * AnimeCix (animecix.tv / animecix.net) is a Cloudflare-protected React SPA. Its
+ * watch-route shape was confirmed from a saved page (og:url / canonical) and the
+ * adapter has since been exercised against the live site:
  *     https://animecix.tv/titles/{numericId}/{text-slug}/season/{S}/episode/{E}
  * i.e. the numeric title id and the text slug are SLASH-separated path segments (not
  * hyphen-joined as previously assumed), followed by explicit /season/N/episode/M
@@ -20,7 +20,8 @@
  * read season/episode from the explicit /season/N/episode/M segments first, and fall
  * back to the document title / other URL forms ("N. Bölüm", trailing "-N-bolum", or
  * an "?episode=" query param). Because it's an SPA, detection is re-run on route
- * changes by content.js. If AnimeCix's structure differs, update this adapter.
+ * changes by content.js — that re-detection is what makes this site work at all, so
+ * be careful changing it.
  */
 (function () {
   "use strict";

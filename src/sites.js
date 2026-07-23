@@ -46,10 +46,10 @@
       verified: true,
     },
     {
-      id: "animeler",
-      name: "Animeler",
-      hosts: ["animeler.me", "animeler.pw"],
-      matches: ["*://*.animeler.me/*", "*://*.animeler.pw/*"],
+      id: "tranimaci",
+      name: "TRAnimeci",
+      hosts: ["tranimaci.com"],
+      matches: ["*://*.tranimaci.com/*"],
       verified: true,
     },
     {
@@ -57,14 +57,14 @@
       name: "AnimeCix",
       hosts: ["animecix.tv", "animecix.net"],
       matches: ["*://*.animecix.tv/*", "*://*.animecix.net/*"],
-      verified: false, // UNVERIFIED — Cloudflare-protected SPA, best-effort adapter
+      verified: true, // Cloudflare-protected SPA; confirmed by live testing
     },
     {
       id: "openanime",
       name: "OpenAnime",
       hosts: ["openani.me", "openanime.com.tr"],
       matches: ["*://*.openani.me/*", "*://*.openanime.com.tr/*"],
-      verified: false, // UNVERIFIED — SPA, best-effort adapter
+      verified: true, // watch route confirmed against a saved openani.me page
     },
   ];
 
