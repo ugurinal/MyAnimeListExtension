@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-24
+
 ### Added
 
 - **TRAnimeci support** (`tranimaci.com`) — episode pages of the form
@@ -83,5 +85,6 @@ _Initial release._
   MAL's edge WAF answers such queries with an HTML `403` page. A blocked search shows a
   short message pointing at the manual search instead of raw markup.
 
-[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ugurinal/MyAnimeListExtension/releases/tag/v1.0.0
