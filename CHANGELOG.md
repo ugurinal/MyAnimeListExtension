@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Client Secret input in Settings didn't match the Client ID input's styling.** It was
+  a `type="password"` field, but the shared input styling (`popup.css`) only targeted
+  `input[type="text"]`, so it fell back to unstyled browser chrome instead of the dark
+  theme, border, radius, padding and focus state used everywhere else. Extended those
+  selectors to also cover `input[type="password"]`.
+
 ## [1.1.0] - 2026-07-24
 
 ### Added
