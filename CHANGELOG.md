@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-07-31
+
+### Fixed
+
+- **`MAL search failed (400): {"message":"invalid q","error":"bad_request"}` on long anime
+  titles.** MAL requires the search `q` to be 3–64 characters (undocumented in its own API
+  reference), but `sanitizeSearchQuery()` capped at 80, so any title between 65 and 80
+  characters was sent oversized and rejected. Hit on Anizm's
+  *Rakudai Kenja no Gakuin Musou: Nidome no Tensei, S-Rank Cheat Majutsushi Boukenroku*,
+  and applied to every site — long light-novel titles were simply unresolvable. The cap is
+  now 64 and truncates on a word boundary, since a mid-word slice matches nothing on MAL.
+- **Titles wrapped entirely in brackets collapsed to an empty query.** The WAF-avoidance
+  step strips whole `(…)`/`[…]` groups, which turned `[Oshi no Ko]` into `""` — also an
+  `invalid q`. It now falls back to keeping the inner text and dropping just the bracket
+  characters, which is equally WAF-safe.
+- **A single unusable query variant aborted the whole lookup.** `searchAnime()` now returns
+  no results for a query below MAL's 3-character minimum instead of throwing, so a short
+  base title no longer prevents the season-qualified variants from being tried.
+- **Sites that pre-truncate their own `og:title` leaked the ellipsis into the search.**
+  Anizm serves `"… S-Rank Cheat Maj..."` while its `<h1>` carries the full title.
+  `cleanAnimeTitle()` now strips a trailing `...`/`…` (and a trailing `/`), and
+  `genericDetect()` prefers the page heading only when `og:title` is visibly truncated —
+  deliberately narrow, so the verified adapters keep their existing title source.
+
 ## [1.1.1] - 2026-07-24
 
 ### Fixed
@@ -95,7 +119,8 @@ _Initial release._
   MAL's edge WAF answers such queries with an HTML `403` page. A blocked search shows a
   short message pointing at the manual search instead of raw markup.
 
-[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ugurinal/MyAnimeListExtension/releases/tag/v1.0.0

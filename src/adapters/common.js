@@ -62,7 +62,11 @@
     // conservative: only matches 4-digit years, so real parenthetical titles
     // (e.g. "Fullmetal Alchemist (Brotherhood)") are left alone.
     t = t.replace(/\s*\(\s*\d{4}\s*(?:[-–—]\s*\d{4}\s*)?\)\s*$/u, "");
-    t = t.replace(/\s+/g, " ").replace(/[\s\-–—:|]+$/u, "").trim();
+    // Some sites pre-truncate their own og:title and leave the ellipsis in
+    // (anizm: "… S-Rank Cheat Maj..."). Drop a trailing "..." / "…" so it never
+    // reaches the MAL query. Requires 2+ dots, so a real trailing "." survives.
+    t = t.replace(/\s*(?:\.{2,}|…)\s*$/u, "");
+    t = t.replace(/\s+/g, " ").replace(/[\s\-–—:|/]+$/u, "").trim();
     return t;
   }
 
@@ -91,14 +95,19 @@
     let seriesSlug = m ? m[1] : null;
     let episode = m ? parseInt(m[2], 10) : null;
 
-    const rawTitle =
-      metaContent(doc, "og:title") ||
-      textFromSelectors(doc, opts.titleSelectors) ||
-      doc.title;
+    const ogTitle = metaContent(doc, "og:title");
+    const domTitle = textFromSelectors(doc, opts.titleSelectors) || doc.title;
+    // og:title normally wins. The exception: some sites (anizm) pre-truncate it
+    // with a literal ellipsis, and the page heading carries the full name — so
+    // only override when og:title is *visibly* cut off. Narrow on purpose, so
+    // the verified adapters keep their existing title source.
+    const ogTruncated = /(?:\.{2,}|…)\s*$/u.test(String(ogTitle || ""));
+    const rawTitle = (ogTruncated && domTitle ? domTitle : ogTitle) || domTitle;
 
-    if (episode == null) episode = episodeFromTitle(rawTitle);
+    if (episode == null) episode = episodeFromTitle(rawTitle) || episodeFromTitle(domTitle);
     const animeTitle = cleanAnimeTitle(rawTitle);
-    const season = seasonFromTitle(rawTitle) || seasonFromTitle(url);
+    const season =
+      seasonFromTitle(rawTitle) || seasonFromTitle(domTitle) || seasonFromTitle(url);
 
     if (!animeTitle || episode == null) return null;
     return { animeTitle, episode, seriesSlug, season: season || null };

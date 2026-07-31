@@ -275,6 +275,12 @@ async function malFetch(path, options = {}, _retried = false) {
   return res;
 }
 
+// MAL rejects any `q` outside 3..64 characters with
+// {"message":"invalid q","error":"bad_request"} — undocumented in MAL's own API
+// reference, but hard. Long light-novel titles blow past 64 easily.
+const MAL_Q_MIN = 3;
+const MAL_Q_MAX = 64;
+
 // Defensively sanitize a search query before it's percent-encoded and sent to
 // MAL. cleanAnimeTitle() already strips a trailing "(YYYY)" year, but this is a
 // last line of defense: MAL's edge WAF returns a plain-HTML 403 ("friendly error
@@ -283,15 +289,36 @@ async function malFetch(path, options = {}, _retried = false) {
 // collapse whitespace, and cap length so no stray punctuation or oversized
 // query can ever trip it.
 function sanitizeSearchQuery(query) {
-  let q = String(query || "");
-  q = q.replace(/[([][^)\]]*[)\]]/g, " "); // drop (...) and [...] groups
-  q = q.replace(/\s+/g, " ").trim();
-  if (q.length > 80) q = q.slice(0, 80).trim();
+  const raw = String(query || "");
+  const stripped = raw
+    .replace(/[([][^)\]]*[)\]]/g, " ") // drop (...) and [...] groups
+    .replace(/\s+/g, " ")
+    .trim();
+  // Dropping whole groups is only safe while something usable survives: a title
+  // that is *entirely* bracketed ("[Oshi no Ko]") would collapse to "", which
+  // MAL rejects. Fall back to keeping the inner text and removing just the
+  // bracket characters — still WAF-safe, since the punctuation is what it hates.
+  let q =
+    stripped.length >= MAL_Q_MIN
+      ? stripped
+      : raw.replace(/[()[\]]/g, " ").replace(/\s+/g, " ").trim();
+  if (q.length > MAL_Q_MAX) {
+    // Cut on a word boundary — a mid-word slice ("… S-Rank Cheat Ma") matches
+    // nothing on MAL, so a truncated query has to end on a whole word.
+    let cut = q.slice(0, MAL_Q_MAX);
+    const lastSpace = cut.lastIndexOf(" ");
+    if (lastSpace > MAL_Q_MAX / 2) cut = cut.slice(0, lastSpace);
+    q = cut.replace(/[\s\-–—:,|./]+$/u, "").trim();
+  }
   return q;
 }
 
 async function searchAnime(query) {
   const sanitized = sanitizeSearchQuery(query);
+  // Below MAL's minimum the request is a guaranteed 400. Return "no results"
+  // instead of throwing, so one unusable variant can't abort the whole
+  // resolveAnime() loop before the usable ones are tried.
+  if (sanitized.length < MAL_Q_MIN) return [];
   const q = encodeURIComponent(sanitized);
   const res = await malFetch(
     `/anime?q=${q}&limit=10&fields=id,title,alternative_titles,num_episodes,main_picture`
