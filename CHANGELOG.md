@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **TRanimeizle stopped being detected** after the site moved to `www.tranimeizle.live`.
+  Added `tranimeizle.live` to the site's hosts in `sites.js` and to the manifest's
+  content-script matches; the older `.io`/`.co`/`.net` domains are kept in case the site
+  rotates back.
+
 ## [1.1.2] - 2026-07-31
 
 ### Fixed

@@ -23,6 +23,7 @@
   "content_scripts": [
     {
       "matches": [
+        "*://*.tranimeizle.live/*",
         "*://*.tranimeizle.io/*",
         "*://*.tranimeizle.co/*",
         "*://*.tranimeizle.net/*",

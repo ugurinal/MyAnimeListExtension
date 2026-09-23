@@ -1,8 +1,8 @@
 /*
  * adapters/tranimeizle.js — VERIFIED against a saved episode page.
  *
- * Episode page: https://www.tranimeizle.io/{series-slug}-{N}-bolum-izle
- * Series page:  https://www.tranimeizle.io/anime/{series-slug}
+ * Episode page: https://www.tranimeizle.live/{series-slug}-{N}-bolum-izle
+ * Series page:  https://www.tranimeizle.live/anime/{series-slug}
  * og:type = "video.episode"; og:title = "<Anime> N. Bölüm İzle".
  * Episode list items use ".episode-li"; breadcrumb's last <li class="active">
  * links to the current episode.
