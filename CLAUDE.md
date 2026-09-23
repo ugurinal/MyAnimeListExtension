@@ -96,8 +96,12 @@ parse it (Python's `email` module) rather than grepping the raw file.
   is destroyed when that tab takes focus, so `CONNECT` reopens it via `chrome.action.openPopup()`
   and the popup also re-syncs from `chrome.storage.onChanged` on `tokens`.
 
-**`seriesSlug` is the cache key** for the persistent `slugMap` (`seriesSlug → malId`) in
-`chrome.storage.local`. Once a slug is cached, resolution short-circuits. If a site nests
+**`seriesSlug` is the primary cache key** for the persistent `slugMap` in
+`chrome.storage.local`. `mappingKeys()` stores each confirmed match (a popup pick via
+`SET_MAPPING`, or a successful update) under site-scoped `${siteId}|slug:…` and
+`${siteId}|title:…#s${season}` keys; the title key is only read when the page has no slug,
+and bare-slug keys from older versions are still read.
+Once a match is cached, resolution short-circuits. If a site nests
 multiple seasons under one slug (AnimeCix does), the adapter **must** season-qualify it
 (`${slug}-s${season}`) or season 2 will silently overwrite season 1's mapping.
 
