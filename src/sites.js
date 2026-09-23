@@ -18,8 +18,9 @@
     {
       id: "tranimeizle",
       name: "TRanimeizle",
-      hosts: ["tranimeizle.io", "tranimeizle.co", "tranimeizle.net"],
+      hosts: ["tranimeizle.live", "tranimeizle.io", "tranimeizle.co", "tranimeizle.net"],
       matches: [
+        "*://*.tranimeizle.live/*",
         "*://*.tranimeizle.io/*",
         "*://*.tranimeizle.co/*",
         "*://*.tranimeizle.net/*",

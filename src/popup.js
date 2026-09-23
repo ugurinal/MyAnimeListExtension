@@ -176,13 +176,25 @@ function renderPickList(candidates, suggestion) {
     meta.appendChild(m);
     li.appendChild(img);
     li.appendChild(meta);
-    li.addEventListener("click", () => {
-      // Picking a candidate only updates the *displayed* target — it does not
-      // write to MAL by itself. The actual write (and the slugMap cache
-      // update) happens when the user clicks "Update progress on MAL".
+    li.addEventListener("click", async () => {
+      // Picking a candidate does not write to MAL by itself — that happens on
+      // "Update progress on MAL". It does persist the choice for this
+      // site + title right away, so it sticks on the next episode/visit.
       selectTarget(c, { unconfirmed: false });
       closeChangePanel();
-      setMsg('Target changed. Click "Update progress on MAL" to save.', "busy");
+      let saved = false;
+      try {
+        const res = await send({ type: "SET_MAPPING", detection: currentDetection, animeId: c.id });
+        saved = !!(res && res.ok);
+      } catch (_) {
+        /* fall through to the unsaved message */
+      }
+      setMsg(
+        saved
+          ? 'Match saved for this title. Click "Update progress on MAL" to update your list.'
+          : 'Target changed (could not save the match). Click "Update progress on MAL" to save.',
+        "busy"
+      );
     });
     list.appendChild(li);
   }

@@ -19,7 +19,7 @@ code and carries `verified: false`, which the popup surfaces to the user.
 
 | Site | Hosts | Episode URL pattern | Status |
 | --- | --- | --- | --- |
-| TRanimeizle | tranimeizle.io/.co/.net | `/{slug}-{N}-bolum-izle` | Verified |
+| TRanimeizle | tranimeizle.live/.io/.co/.net | `/{slug}-{N}-bolum-izle` | Verified |
 | Anizm | anizm.net, anizm.tr | `/{slug}-{N}-bolum-izle` | Verified |
 | TürkAnime | turkanime.co/.tv/.com.tr/.pro | `/video/{slug}-{N}-bolum` | Verified |
 | TRAnimeci | tranimaci.com | `/video/{id}-{slug}-{N}-bolum` | Verified |
