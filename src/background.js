@@ -32,7 +32,7 @@ const K = {
   clientSecret: "clientSecret", // MAL "web" apps require this at the token endpoint
   autoUpdate: "autoUpdate",
   tokens: "tokens", // { access_token, refresh_token, expires_at }
-  slugMap: "slugMap", // { [seriesSlug]: malAnimeId } — confirmed match cache
+  slugMap: "slugMap", // { [mappingKey]: malAnimeId } — confirmed match cache (see mappingKeys)
 };
 
 // In-memory cache of detections keyed by tabId.
@@ -492,13 +492,49 @@ function titleHasSeasonMarker(title, season) {
   );
 }
 
-// Resolve a MAL anime id for a detection. Uses the confirmed-slug cache first,
+// slugMap keys for a detection, most specific first. Mappings are scoped to the
+// site, and keyed by slug AND by title+season, so a pick survives even when a
+// page yields no slug (or a different one) for the same show. The bare,
+// unscoped slug is the legacy key format — read-only, kept so existing
+// mappings keep resolving.
+function mappingKeys(detection) {
+  const site = detection.siteId || "?";
+  const keys = [];
+  if (detection.seriesSlug) keys.push(`${site}|slug:${detection.seriesSlug.toLowerCase()}`);
+  const title = String(detection.animeTitle || "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+  if (title) keys.push(`${site}|title:${title}#s${detection.season || 1}`);
+  return keys;
+}
+
+// The title key is only consulted when the page has no slug: when it has one, an
+// unmapped slug means a different show/season whose stripped title may collide
+// with an already-mapped one (e.g. an undetected "Season 2").
+function lookupMapping(slugMap, detection) {
+  const [first] = mappingKeys(detection);
+  if (first && slugMap[first]) return slugMap[first];
+  if (detection.seriesSlug) return slugMap[detection.seriesSlug] || null;
+  return null;
+}
+
+async function saveMapping(detection, animeId) {
+  const keys = mappingKeys(detection);
+  if (!keys.length || !animeId) return;
+  const slugMap = (await get(K.slugMap))[K.slugMap] || {};
+  for (const k of keys) slugMap[k] = animeId;
+  await set({ [K.slugMap]: slugMap });
+}
+
+// Resolve a MAL anime id for a detection. Uses the confirmed-match cache first,
 // then a search with best-match scoring. Returns { id, title, mainPicture,
 // candidates, suggestion, suggestionScore, cached }.
 async function resolveAnime(detection) {
   const slugMap = (await get(K.slugMap))[K.slugMap] || {};
-  if (detection.seriesSlug && slugMap[detection.seriesSlug]) {
-    const id = slugMap[detection.seriesSlug];
+  const cachedId = lookupMapping(slugMap, detection);
+  if (cachedId) {
+    const id = cachedId;
     // Cached hit: fetch details so callers (e.g. the popup's "will update"
     // preview) can still show a title/cover for an already-confirmed match.
     let node = null;
@@ -616,12 +652,8 @@ async function doUpdate({ detection, animeId, status, score }) {
 
   const result = await updateListStatus(id, patch);
 
-  // Remember the confirmed slug->id mapping for next time.
-  if (detection.seriesSlug) {
-    const slugMap = (await get(K.slugMap))[K.slugMap] || {};
-    slugMap[detection.seriesSlug] = id;
-    await set({ [K.slugMap]: slugMap });
-  }
+  // Remember the confirmed detection->id mapping for next time.
+  await saveMapping(detection, id);
 
   return {
     ok: true,
@@ -691,6 +723,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             score: msg.score,
           });
           sendResponse(r);
+          break;
+        }
+        case "SET_MAPPING": {
+          // The user picked an anime in the popup — persist it immediately so
+          // the choice sticks even if they never click Update.
+          if (!msg.detection || !msg.animeId) {
+            sendResponse({ ok: false, error: "Nothing to save." });
+            break;
+          }
+          await saveMapping(msg.detection, msg.animeId);
+          sendResponse({ ok: true });
           break;
         }
         case "SEARCH": {

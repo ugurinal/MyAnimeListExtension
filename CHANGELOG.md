@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.3] - 2026-09-23
+
+### Fixed
+
+- **TRanimeizle stopped being detected** after the site moved to `www.tranimeizle.live`.
+  Added `tranimeizle.live` to the site's hosts in `sites.js` and to the manifest's
+  content-script matches; the older `.io`/`.co`/`.net` domains are kept in case the site
+  rotates back.
+- **A manually picked anime didn't stick.** Choosing the right entry from the search/pick
+  list only changed the popup's display; the match was saved only after a successful
+  "Update progress on MAL", and only when the page URL yielded a slug. Picks are now
+  saved immediately (new `SET_MAPPING` message), and mappings are keyed per site by both
+  slug and title+season, so the same show resolves on later episodes and visits even
+  without a slug (the title key is used only when the page has no slug). Existing
+  slug-only mappings still resolve.
+
 ## [1.1.2] - 2026-07-31
 
 ### Fixed
@@ -119,7 +135,8 @@ _Initial release._
   MAL's edge WAF answers such queries with an HTML `403` page. A blocked search shows a
   short message pointing at the manual search instead of raw markup.
 
-[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.2...HEAD
+[Unreleased]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ugurinal/MyAnimeListExtension/compare/v1.0.0...v1.1.0
